@@ -286,3 +286,102 @@ class CompanyList(APIView):
         companies = Company.objects.all()
         response = [company.name for company in companies]
         return Response(response, status=status.HTTP_200_OK)
+
+
+# api/dashboard/projectWiseBugs
+class ProjectWiseBugsDashboard(APIView):
+    authentication_classes = [TokenAuthentication, BasicAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        try:
+
+            # find projects of the user
+            user_projects = Projects.objects.filter(user_id=user)
+
+            # now find tickets corresponding to each project
+            tickets = dict()
+            for project in user_projects:
+                tickets[project.name] = len(Tickets.objects.filter(project_id=project))
+            return Response(tickets, status=status.HTTP_200_OK)
+        except Projects.DoesNotExist:
+            return Response({"msg": "No Project exists for the user"}, status=status.HTTP_204_NO_CONTENT)
+
+
+# api/dashboard/companyWiseProjects
+class CompanyWiseProjectsDashboard(APIView):
+    authentication_classes = [TokenAuthentication, BasicAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        companies = Projects.objects.filter(user_id=user)
+
+        response = defaultdict(int)
+        for company in companies:
+            response[company.company_id.name] += 1
+        return Response(response, status=status.HTTP_200_OK)
+
+
+# api/dashboard/bugsByType
+class BugsByTypeDashboard(APIView):
+    authentication_classes = [TokenAuthentication, BasicAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        # first find project of this user
+
+        projects = Projects.objects.filter(user_id=user)
+
+        # now find the bugs for these projects and classify them into three types
+        # Feature/Request, Bug/Error, Others
+
+        response = {
+            'Feature/Request': 0,
+            'Bug/Error': 0,
+            'Others': 0
+        }
+        for project in projects:
+            tickets = Tickets.objects.filter(project_id=project)
+            for ticket in tickets:
+                if ticket.type == "Feature/Request":
+                    response['Feature/Request'] += 1
+                elif ticket.type == "Bug/Error":
+                    response['Bug/Error'] += 1
+                else:
+                    response['Others'] += 1
+        return Response(response, status=status.HTTP_200_OK)
+
+
+# api/dashboard/bugsByStatus
+class BugsByStatus(APIView):
+    authentication_classes = [TokenAuthentication, BasicAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        # first find project of this user
+
+        projects = Projects.objects.filter(user_id=user)
+
+        # now find the bugs for these projects and classify them into three types
+        # Feature/Request, Bug/Error, Others
+
+        response = {
+            'Open': 0,
+            'Closed': 0
+        }
+        for project in projects:
+            tickets = Tickets.objects.filter(project_id=project)
+            for ticket in tickets:
+                if ticket.status == "Open":
+                    response['Open'] += 1
+                else:
+                    response['Closed'] += 1
+        return Response(response, status=status.HTTP_200_OK)
