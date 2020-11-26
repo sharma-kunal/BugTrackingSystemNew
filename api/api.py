@@ -115,6 +115,8 @@ class UserProject(APIView):
 
                 # find projects for user and company name
 
+                # also return no of tickets in each project
+
                 projects = Projects.objects.filter(company_id=company_table, user_id=client)
             except Company.DoesNotExist:
                 return Response({"msg": "Company Does Not Exist"}, status=status.HTTP_204_NO_CONTENT)
@@ -136,7 +138,8 @@ class UserProject(APIView):
                 'id': project.id,
                 'name': project.name,
                 'description': project.description,
-                'company_name': project.company_id.name
+                'company_name': project.company_id.name,
+                'tickets': len(Tickets.objects.filter(project_id=project))
             })
         return Response(response, status=status.HTTP_200_OK)
 
