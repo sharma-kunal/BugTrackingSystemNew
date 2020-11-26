@@ -5,6 +5,7 @@ from .serializers import UserSerializer, ProjectSerializer, TicketSerializer
 from django.contrib.auth.models import User
 from .models import Company, Projects, Tickets
 from rest_framework.exceptions import APIException, PermissionDenied, NotFound
+from django.db.utils import IntegrityError
 from rest_framework.authentication import BasicAuthentication, TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
@@ -45,8 +46,12 @@ class SignUpCompany(APIView):
             user = User.objects.get(username=request.data['username'])
 
             # Add this company and this user to Company table
-            Company.objects.create(name=company_name, user_id=user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            try:
+                Company.objects.create(name=company_name, user_id=user)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except IntegrityError:
+                return Response({"msg": "Company by that name is already registered"},
+                                status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

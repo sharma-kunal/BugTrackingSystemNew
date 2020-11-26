@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 #       means that user is Client
 class Company(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
 
 
