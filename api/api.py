@@ -78,6 +78,16 @@ class Login(APIView):
         return Response({"msg": "Wrong Password"}, status=status.HTTP_403_FORBIDDEN)
 
 
+# api/logout
+class LogOut(APIView):
+    authentication_classes = [TokenAuthentication, BasicAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        request.user.auth_token.delete()
+        return Response({}, status=status.HTTP_200_OK)
+
+
 # api/user/project
 class UserProject(APIView):
     authentication_classes = [TokenAuthentication, BasicAuthentication]
