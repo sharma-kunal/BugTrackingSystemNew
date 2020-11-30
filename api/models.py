@@ -30,6 +30,8 @@ class Tickets(models.Model):
     )
     STATUS_CHOICES = (
         ('Open', 'Open'),
+        ('In Progress', 'In Progress'),
+        ('Additional Info Required', 'Additional Info Required'),
         ('Closed', 'Closed')
     )
     TICKET_TYPE_CHOICES = (
@@ -42,7 +44,7 @@ class Tickets(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField(max_length=500)
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES)
     type = models.CharField(max_length=20, choices=TICKET_TYPE_CHOICES)
     CreatedDate = models.DateTimeField(auto_now_add=True)
     project_id = models.ForeignKey(Projects, on_delete=models.CASCADE)

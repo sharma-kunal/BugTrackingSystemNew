@@ -194,6 +194,19 @@ class UserProjectID(APIView):
         except Projects.DoesNotExist:
             return Response({"msg": "No Such Project Exist"}, status=status.HTTP_204_NO_CONTENT)
 
+    def delete(self, request, project_id):
+        user = request.user
+
+        if user.username.split()[0] == "company":
+            return Response({"msg": "Company cannot delete a project"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            project = Projects.objects.get(id=project_id)
+            project.delete()
+            return Response({"msg": "Deleted Successfully"}, status=status.HTTP_200_OK)
+        except Projects.DoesNotExist:
+            return Response({"msg": "Project Does Not Exist"}, status=status.HTTP_204_NO_CONTENT)
+
 
 # api/user/project/<project_id>/ticket
 class UserTicket(APIView):
@@ -267,6 +280,37 @@ class UserTicketID(APIView):
         except Projects.DoesNotExist:
             return Response({"msg": "Project Does Not Exist"}, status=status.HTTP_204_NO_CONTENT)
         except Tickets.DoesNotExist:
+            return Response({"msg": "Ticket Does Not Exist"}, status=status.HTTP_204_NO_CONTENT)
+
+    def put(self, request, project_id, ticket_id):
+        user = request.user
+        try:
+            project = Projects.objects.get(id=project_id)
+
+            ticket = Tickets.objects.get(id=ticket_id)
+
+            request.data['project_id'] = project.id
+
+            serializer = TicketSerializer(ticket, request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Projects.DoesNotExist:
+            return Response({"msg": "Project Does Not Exist"}, status=status.HTTP_204_NO_CONTENT)
+        except Projects.DoesNotExist:
+            return Response({"msg": "Ticket Does Not Exist"}, status=status.HTTP_204_NO_CONTENT)
+
+    def delete(self, request, project_id, ticket_id):
+        try:
+            Projects.objects.get(id=project_id)
+
+            ticket = Tickets.objects.get(id=ticket_id)
+            ticket.delete()
+            return Response({"msg": "Ticket deleted successfully"}, status=status.HTTP_200_OK)
+        except Projects.DoesNotExist:
+            return Response({"msg": "Project Does Not Exist"}, status=status.HTTP_204_NO_CONTENT)
+        except Projects.DoesNotExist:
             return Response({"msg": "Ticket Does Not Exist"}, status=status.HTTP_204_NO_CONTENT)
 
 
